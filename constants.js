@@ -13,7 +13,6 @@ const prompts = [
     "what is your name",
     "what call yourself"
   ],
-  ["Capital of india"],
   ["i love you"],
   ["happy", "good", "fun", "wonderful", "fantastic", "cool"],
   ["bad", "bored", "tired"],
@@ -25,7 +24,8 @@ const prompts = [
   ["what", "why", "how", "where", "when"],
   ["no","not sure","maybe","no thanks"],
   [""],
-  ["haha","ha","lol","hehe","funny","joke"]
+  ["haha","ha","lol","hehe","funny","joke"],
+  ["capital of india"],
 ]
 
 // Possible responses, in corresponding order
