@@ -13,6 +13,7 @@ const prompts = [
     "what is your name",
     "what call yourself"
   ],
+  ["Capital of india"],
   ["i love you"],
   ["happy", "good", "fun", "wonderful", "fantastic", "cool"],
   ["bad", "bored", "tired"],
@@ -45,7 +46,7 @@ const replies = [
   ["I am infinite"],
   ["I am just a bot", "I am a bot. What are you?"],
   ["The one true God, JavaScript"],
-  ["I am nameless", "I don't have a name"],
+  ["my name is nora", "i m your nora"],
   ["I love you too", "Me too"],
   ["Have you ever felt bad?", "Glad to hear it"],
   ["Why?", "Why? You shouldn't!", "Try watching TV"],
@@ -57,7 +58,8 @@ const replies = [
   ["Great question"],
   ["That's ok","I understand","What do you want to talk about?"],
   ["Please say something :("],
-  ["Haha!","Good one!"]
+  ["Haha!","Good one!"],
+  ["delhi"]
 ]
 
 // Random for any other user input
