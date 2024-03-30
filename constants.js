@@ -26,9 +26,9 @@ const prompts = [
   [""],
   ["haha","ha","lol","hehe","funny","joke"],
   ["capital of india"],
-  ["jay shree ram"],
+  ["jay shree ram!"],
   ["whatsupp"],
-  ["how was your day"]
+  ["how was your day?"]
 ]
 
 // Possible responses, in corresponding order
