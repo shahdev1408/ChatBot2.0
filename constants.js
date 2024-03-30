@@ -1,5 +1,8 @@
 // Options the user could type in
 const prompts = [
+  ["jay shree ram!"],
+  ["whatsupp"],
+  ["how was your day?"]
   ["hi", "hey", "hello", "good morning", "good afternoon"],
   ["how are you", "how is life", "how are things"],
   ["what are you doing", "what is going on", "what is up"],
@@ -26,14 +29,15 @@ const prompts = [
   [""],
   ["haha","ha","lol","hehe","funny","joke"],
   ["capital of india"],
-  ["jay shree ram!"],
-  ["whatsupp"],
-  ["how was your day?"]
+ 
 ]
 
 // Possible responses, in corresponding order
 
 const replies = [
+   ["jay shree ram 🙏🏻"],
+  ["yeah.. all good 😊, aap batao 😉"],
+  ["itna achha nai tha! but aapka message dekh ke thik ho gaya"]
   ["Hello!", "Hi!", "Hey!", "Hi there!","Howdy"],
   [
     "Fine... how are you?",
@@ -63,12 +67,20 @@ const replies = [
   ["Please say something :("],
   ["Haha!","Good one!"],
   ["delhi"],
-  ["jay shree ram 🙏🏻"],
-  ["yeah.. all good 😊, aap batao 😉"],
-  ["itna achha nai tha! but aapka message dekh ke thik ho gaya"]
+  
 ]
 
 // Random for any other user input
+
+const alternative = [
+  "Same",
+  "Go on...",
+  "Bro...",
+  "Try again",
+  "I'm listening...",
+  "I don't understand :/"
+]
+
 
 
 // Whatever else you want :)
