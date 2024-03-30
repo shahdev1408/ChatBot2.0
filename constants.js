@@ -70,14 +70,6 @@ const replies = [
 
 // Random for any other user input
 
-const alternative = [
-  "Same",
-  "Go on...",
-  "Bro...",
-  "Try again",
-  "I'm listening...",
-  "I don't understand :/"
-]
 
 // Whatever else you want :)
 
