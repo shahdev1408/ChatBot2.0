@@ -26,6 +26,9 @@ const prompts = [
   [""],
   ["haha","ha","lol","hehe","funny","joke"],
   ["capital of india"],
+  ["jay shree ram"],
+  ["whatsupp"],
+  ["how was your day"]
 ]
 
 // Possible responses, in corresponding order
@@ -59,7 +62,10 @@ const replies = [
   ["That's ok","I understand","What do you want to talk about?"],
   ["Please say something :("],
   ["Haha!","Good one!"],
-  ["delhi"]
+  ["delhi"],
+  ["jay shree ram 🙏🏻"],
+  ["yeah.. all good 😊, aap batao 😉"],
+  ["itna achha nai tha! but aapka message dekh ke thik ho gaya"]
 ]
 
 // Random for any other user input
