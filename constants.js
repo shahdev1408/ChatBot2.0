@@ -27,6 +27,7 @@ const prompts = [
   [""],
   ["haha","ha","lol","hehe","funny","joke"],
   ["capital of india"],
+  ["jay shree ram"],
  
 ]
 
@@ -63,6 +64,7 @@ const replies = [
   ["Please say something :("],
   ["Haha!","Good one!"],
   ["delhi"],
+  ["jay shree ram"],
   
 ]
 
