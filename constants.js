@@ -26,8 +26,7 @@ const prompts = [
   ["no","not sure","maybe","no thanks"],
   [""],
   ["haha","ha","lol","hehe","funny","joke"],
-  ["capital of india"],
-  ["jay shree ram"]
+  ["jay shree ram"],
   ["who is diya?"],
  
 ]
@@ -64,8 +63,7 @@ const replies = [
   ["That's ok","I understand","What do you want to talk about?"],
   ["Please say something :("],
   ["Haha!","Good one!"],
-  ["delhi"],
-  ["jay shree ram"]
+  ["jay shree ram"],
   ["diya dev ni bakkudi che"],
   
 ]
