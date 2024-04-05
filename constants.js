@@ -27,7 +27,7 @@ const prompts = [
   [""],
   ["haha","ha","lol","hehe","funny","joke"],
   ["jay shree ram"],
-  ["who is diya?"],
+  ["diya kon he?"],
  
 ]
 
@@ -64,7 +64,7 @@ const replies = [
   ["Please say something :("],
   ["Haha!","Good one!"],
   ["jay shree ram"],
-  ["diya dev ni bakkudi che"],
+  ["diya dev ki bakkudi he"],
   
 ]
 
