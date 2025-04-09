@@ -1,18 +1,32 @@
 document.addEventListener("DOMContentLoaded", () => {
   const inputField = document.getElementById("input");
+  const sendButton = document.getElementById("send");
+  const themeToggle = document.getElementById("theme-toggle");
+
   inputField.addEventListener("keydown", (e) => {
-    if (e.code === "Enter") {
-      let input = inputField.value;
-      inputField.value = "";
-      output(input);
-    }
+    if (e.code === "Enter") sendMessage();
+  });
+
+  sendButton.addEventListener("click", sendMessage);
+
+  themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
   });
 });
+
+function sendMessage() {
+  const inputField = document.getElementById("input");
+  const input = inputField.value.trim();
+  if (!input) return;
+  inputField.value = "";
+  output(input);
+}
 
 async function output(input) {
   const messagesContainer = document.getElementById("messages");
 
-  const botText = addChat(input, "Typing..."); // ✅ Save returned span
+  const botText = addChat(input, "Typing..."); // This gives us the span to update
 
   try {
     const response = await fetch("/api/ask", {
@@ -22,11 +36,10 @@ async function output(input) {
     });
 
     const data = await response.json();
-    console.log("Gemini reply:", data);
     const reply = data.response || "Sorry, I didn't get that.";
 
     setTimeout(() => {
-      botText.innerText = reply;     // ✅ Now safe to update
+      botText.innerText = reply;
       textToSpeech(reply);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }, 1000);
@@ -40,25 +53,30 @@ async function output(input) {
 function addChat(input, product) {
   const messagesContainer = document.getElementById("messages");
 
-  let userDiv = document.createElement("div");
+  // User message
+  const userDiv = document.createElement("div");
   userDiv.id = "user";
   userDiv.className = "user response";
   userDiv.innerHTML = `<img src="user.png" class="avatar"><span>${input}</span>`;
   messagesContainer.appendChild(userDiv);
 
-  let botDiv = document.createElement("div");
-  let botImg = document.createElement("img");
-  let botText = document.createElement("span");
+  // Bot placeholder
+  const botDiv = document.createElement("div");
+  const botImg = document.createElement("img");
+  const botText = document.createElement("span");
+
   botDiv.id = "bot";
+  botDiv.className = "bot response";
   botImg.src = "bot-mini.png";
   botImg.className = "avatar";
-  botDiv.className = "bot response";
-  botText.innerText = "Typing...";
+
+  botText.innerText = product;
+
   botDiv.appendChild(botText);
   botDiv.appendChild(botImg);
   messagesContainer.appendChild(botDiv);
 
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-  return botText; // ✅ Return this so we can edit it later
+  return botText; // Return this so we can update it later
 }
