@@ -12,8 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function output(input) {
   const messagesContainer = document.getElementById("messages");
 
-  // Show user message and typing status
-  addChat(input, "Typing...");
+  const botText = addChat(input, "Typing..."); // ✅ Save returned span
 
   try {
     const response = await fetch("/api/ask", {
@@ -23,18 +22,18 @@ async function output(input) {
     });
 
     const data = await response.json();
+    console.log("Gemini reply:", data);
     const reply = data.response || "Sorry, I didn't get that.";
 
-    // Replace "Typing..." with Gemini reply
-    const botDiv = messagesContainer.querySelector(".bot.response span:last-child");
     setTimeout(() => {
-      botDiv.innerText = reply;
+      botText.innerText = reply;     // ✅ Now safe to update
       textToSpeech(reply);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }, 1000);
 
   } catch (error) {
-    const botDiv = messagesContainer.querySelector(".bot.response span:last-child");
-    botDiv.innerText = "Sorry, something went wrong.";
+    console.error("Error fetching Gemini response:", error);
+    botText.innerText = "Sorry, something went wrong.";
   }
 }
 
@@ -59,5 +58,7 @@ function addChat(input, product) {
   botDiv.appendChild(botImg);
   messagesContainer.appendChild(botDiv);
 
-  messagesContainer.scrollTop = messagesContainer.scrollHeight - messagesContainer.clientHeight;
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  return botText; // ✅ Return this so we can edit it later
 }
