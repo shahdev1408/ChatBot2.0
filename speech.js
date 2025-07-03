@@ -1,13 +1,25 @@
-// Text to Speech
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+recognition.lang = "en-US";
+recognition.interimResults = false;
 
-const synth = window.speechSynthesis;
+micBtn.addEventListener("click", () => {
+  recognition.start();
+});
 
-const textToSpeech = (string) => {
-  let voice = new SpeechSynthesisUtterance(string);
-  voice.text = string;
-  voice.lang = "en-US";
-  voice.volume = 1;
-  voice.rate = 1;
-  voice.pitch = 1; // Can be 0, 1, or 2
-  synth.speak(voice);
+recognition.onresult = (event) => {
+  const transcript = event.results[0][0].transcript;
+  inputField.value = transcript;
+  sendBtn.click();
+};
+
+recognition.onerror = (event) => {
+  alert("🎙️ Voice error: " + event.error);
+};
+
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "en-US";
+  utterance.rate = 1;
+  speechSynthesis.speak(utterance);
 }

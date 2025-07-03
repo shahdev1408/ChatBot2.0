@@ -1,0 +1,23 @@
+# Node modules (don't upload dependencies)
+node_modules/
+
+# Environment variables (keep your API key secret)
+.env
+
+# Log files (unnecessary files)
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Vercel or Netlify local config (if exists)
+.vercel/
+.netlify/
+
+# VS Code settings (optional, personal configs)
+.vscode/
+
+# Build artifacts (if using any build tools)
+dist/
+build/

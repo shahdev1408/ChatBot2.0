@@ -4,6 +4,9 @@ export default async function handler(req, res) {
   }
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_API_KEY) {
+    return res.status(500).json({ error: "API key not configured." });
+  }
 
   try {
     const geminiRes = await fetch(
@@ -14,10 +17,14 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           contents: [
             {
-              parts: [{ text: req.body.prompt }]
-            }
-          ]
-        })
+              parts: [
+                {
+                  text: req.body.prompt,
+                },
+              ],
+            },
+          ],
+        }),
       }
     );
 
@@ -28,7 +35,6 @@ export default async function handler(req, res) {
       "Sorry, I couldn't understand.";
 
     res.status(200).json({ response: reply });
-
   } catch (error) {
     console.error("Gemini API Error:", error);
     res.status(500).json({ response: "Error talking to Gemini." });

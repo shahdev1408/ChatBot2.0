@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chatbot</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" href="bot.png" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
-
 <body>
-  <!-- Dark mode toggle -->
+  <!-- Top Bar -->
   <div class="top-bar">
     <h2>Chatbot</h2>
     <button id="theme-toggle">🌙</button>
   </div>
 
-  <!-- Original layout -->
-  <div id="container" class="container">
-    <div id="chat" class="chat">
-      <div id="messages" class="messages"></div>
+  <!-- Main Layout -->
+  <div class="container">
+    <!-- Chat Area -->
+    <div class="chat">
+      <div class="messages" id="messages"></div>
       <div class="input-area">
-        <input id="input" type="text" placeholder="Say something..." autocomplete="off" autofocus />
+        <input type="text" id="input" placeholder="Say something..." autocomplete="off"/>
         <button id="send">Send</button>
+        <button id="mic">🎤</button>
       </div>
     </div>
-    <img src="bot.png" alt="Robot cartoon" height="500vh">
+
+    <!-- Bot Image with Mouth -->
+    <div class="bot-image-container">
+      <img src="bot.png" alt="Bot" class="bot-img" />
+      <div id="bot-mouth"></div>
+    </div>
   </div>
 
   <script src="index.js"></script>
-  <script src="constants.js"></script>
-  <script src="speech.js"></script>
 </body>
 </html>
