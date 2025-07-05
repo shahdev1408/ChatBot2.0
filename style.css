@@ -82,6 +82,7 @@ body {
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 input {
@@ -177,10 +178,14 @@ body.dark #mic:hover {
   background: #1c7c36;
 }
 
+/* ============================== */
+/* 🌐 Mobile Responsive Styles 📱 */
+/* ============================== */
 @media (max-width: 768px) {
   .container {
     flex-direction: column;
     align-items: center;
+    padding: 1rem;
   }
 
   .chat {
@@ -189,11 +194,26 @@ body.dark #mic:hover {
     max-width: 90vw;
   }
 
-  .bot-svg-container {
-    width: 60%;
+  .input-area {
+    flex-direction: column;
+    width: 100%;
   }
 
-  input, #send, #mic {
+  .input-area input,
+  .input-area button {
+    width: 100%;
+    box-sizing: border-box;
     font-size: 0.95rem;
+  }
+
+  .bot-svg-container {
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .messages {
+    max-height: 300px;
   }
 }
