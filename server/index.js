@@ -24,8 +24,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 // Create an Express application
 const app = express();
-const port = 3000;
-
+const port = process.env.PORT || 3000;
 // Enable CORS for all routes, allowing requests from different origins
 app.use(cors());
 
@@ -75,5 +74,5 @@ app.post("/chat", async (req, res) => {
 
 // Start the Express server and listen on the specified port
 app.listen(port, () => {
-  console.log(`✅ Server is running at http://localhost:${port}`);
+  console.log(`✅ Server is running on port ${port}`);
 });
