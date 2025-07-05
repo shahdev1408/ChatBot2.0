@@ -28,10 +28,10 @@ async function sendMessage() {
   try {
     mouth.classList.add("mouth-talking");
 
-    const response = await fetch("https://chatbot2-0-pobq.onrender.com", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userMessage }),
+    const response = await fetch("https://chatbot2-0-pobq.onrender.com/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: userMessage }),
     });
 
     const data = await response.json();
