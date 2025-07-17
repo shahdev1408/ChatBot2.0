@@ -1,37 +1,31 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chatbot</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="bot.png" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Top Bar -->
   <div class="top-bar">
     <h2>Chatbot</h2>
     <button id="theme-toggle">🌙</button>
   </div>
-
-  <!-- Main Layout -->
   <div class="container">
-    <!-- Chat Area -->
-    <div class="chat">
-      <div class="messages" id="messages"></div>
+    <div id="chat" class="chat">
+      <div id="messages" class="messages"></div>
       <div class="input-area">
-        <input type="text" id="input" placeholder="Say something..." autocomplete="off"/>
+        <input id="input" type="text" placeholder="Say something..." autocomplete="off" autofocus />
         <button id="send">Send</button>
         <button id="mic">🎤</button>
       </div>
     </div>
-
-    <!-- Bot Image with Mouth -->
-    <div class="bot-image-container">
-      <img src="bot.png" alt="Bot" class="bot-img" />
-      <div id="bot-mouth"></div>
-    </div>
+    <img src="bot.png" alt="Robot cartoon" />
   </div>
-
   <script src="index.js"></script>
+  <script src="constants.js"></script>
+  <script src="speech.js"></script>
 </body>
 </html>
