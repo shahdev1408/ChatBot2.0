@@ -4,346 +4,67 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ChatBot 2.0</title>
-  <!-- You can add a favicon link here if you have one -->
-  <!-- <link rel="icon" href="bot.png" /> -->
   
   <style>
     /* === Futuristic Chat UI Style Sheet === */
-    /* Embedded directly for a single-file solution */
-
-    /* 1. FONT IMPORT & ROOT VARIABLES */
-    /* =================================== */
+    /* All CSS is now embedded here */
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
-
     :root {
-      /* --- Light Theme --- */
-      --bg-color-light: #f0f2f5;
-      --text-color-light: #1c1e21;
-      --primary-color-light: #007bff;
-      --chat-bg-light: #ffffff;
-      --user-msg-bg-light: #0084ff;
-      --user-msg-text-light: #ffffff;
-      --bot-msg-bg-light: #e4e6eb;
-      --bot-msg-text-light: #050505;
-      --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
-      --border-color-light: #ced4da;
-
-      /* --- Dark Theme (Blue/Black Futuristic) --- */
-      --bg-color-dark: #0a0a0a; /* Deep space black */
-      --text-color-dark: #e4e6eb;
-      --primary-color-dark: #2a8cff; /* Electric blue */
-      --chat-bg-dark: #18191a; /* Charcoal grey */
-      --user-msg-bg-dark: linear-gradient(135deg, #007bff, #2a8cff); /* Gradient for user */
-      --user-msg-text-dark: #ffffff;
-      --bot-msg-bg-dark: #3a3b3c; /* Softer grey for bot */
-      --bot-msg-text-dark: #e4e6eb;
-      --shadow-dark: 0 6px 20px rgba(0, 115, 255, 0.15); /* Blue glow shadow */
-      --border-color-dark: #303030;
+      --bg-color-light: #f0f2f5; --text-color-light: #1c1e21; --primary-color-light: #007bff; --chat-bg-light: #ffffff; --user-msg-bg-light: #0084ff; --user-msg-text-light: #ffffff; --bot-msg-bg-light: #e4e6eb; --bot-msg-text-light: #050505; --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1); --border-color-light: #ced4da;
+      --bg-color-dark: #0a0a0a; --text-color-dark: #e4e6eb; --primary-color-dark: #2a8cff; --chat-bg-dark: #18191a; --user-msg-bg-dark: linear-gradient(135deg, #007bff, #2a8cff); --user-msg-text-dark: #ffffff; --bot-msg-bg-dark: #3a3b3c; --bot-msg-text-dark: #e4e6eb; --shadow-dark: 0 6px 20px rgba(0, 115, 255, 0.15); --border-color-dark: #303030;
     }
-
-    /* 2. GENERAL BODY & THEME STYLES */
-    /* =================================== */
-    body {
-      font-family: 'Roboto', 'Segoe UI', sans-serif;
-      background-color: var(--bg-color-light);
-      color: var(--text-color-light);
-      margin: 0;
-      padding: 0;
-      transition: background-color 0.4s ease, color 0.4s ease;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    body.dark {
-      background-color: var(--bg-color-dark);
-      color: var(--text-color-dark);
-    }
-
-    /* 3. TOP BAR & THEME TOGGLE */
-    /* =================================== */
-    .top-bar {
-      background: var(--chat-bg-light);
-      display: flex;
-      justify-content: space-between;
-      padding: 1rem 2rem;
-      box-shadow: var(--shadow-light);
-      align-items: center;
-      flex-shrink: 0;
-      z-index: 1000;
-      transition: background-color 0.4s ease, box-shadow 0.4s ease;
-    }
-    
-    body.dark .top-bar {
-      background: var(--chat-bg-dark);
-      box-shadow: var(--shadow-dark);
-      border-bottom: 1px solid var(--border-color-dark);
-    }
-
-    .top-bar h2 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary-color-light);
-    }
-
-    body.dark .top-bar h2 {
-        color: var(--primary-color-dark);
-    }
-
-    #theme-toggle {
-      font-size: 1.5rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text-color-light);
-      transition: color 0.3s ease, transform 0.3s ease;
-    }
-
-    #theme-toggle:hover {
-      transform: scale(1.1) rotate(15deg);
-      color: var(--primary-color-light);
-    }
-
-    body.dark #theme-toggle {
-      color: var(--text-color-dark);
-    }
-    body.dark #theme-toggle:hover {
-      color: var(--primary-color-dark);
-    }
-
-    /* 4. MAIN CHAT CONTAINER & LAYOUT */
-    /* =================================== */
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
-      gap: 2rem; /* Space between chat and robot */
-      box-sizing: border-box;
-      flex-grow: 1;
-      overflow: hidden;
-    }
-
-    .chat {
-      background: var(--chat-bg-light);
-      border-radius: 24px;
-      width: 100%;
-      max-width: 700px;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      box-shadow: var(--shadow-light);
-      transition: background-color 0.4s ease, box-shadow 0.4s ease;
-      overflow: hidden;
-    }
-
-    body.dark .chat {
-      background: var(--chat-bg-dark);
-      box-shadow: var(--shadow-dark);
-      border: 1px solid var(--border-color-dark);
-    }
-
-    /* NEW: Desktop Robot Mascot */
-    .robot-mascot {
-        width: 100%;
-        max-width: 300px;
-        align-self: center;
-        animation: float 6s ease-in-out infinite;
-    }
-
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-20px); }
-        100% { transform: translateY(0px); }
-    }
-
-
-    /* 5. MESSAGES AREA & BUBBLES */
-    /* =================================== */
-    .messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1.5rem;
-    }
-
-    .response {
-      margin-bottom: 1rem;
-      display: flex;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: message-appear 0.5s forwards ease-out;
-    }
-
-    @keyframes message-appear {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .response span {
-      display: inline-block;
-      padding: 12px 20px;
-      border-radius: 20px;
-      max-width: 85%;
-      word-wrap: break-word;
-      font-size: 1rem;
-      line-height: 1.5;
-    }
-
-    .user {
-      justify-content: flex-end;
-    }
-    .user span {
-      background: var(--user-msg-bg-light);
-      color: var(--user-msg-text-light);
-      border-bottom-right-radius: 5px;
-    }
-    body.dark .user span {
-      background: var(--user-msg-bg-dark);
-      color: var(--user-msg-text-dark);
-    }
-
-    /* MODIFIED: Bot message layout */
-    .bot {
-      justify-content: flex-start;
-      align-items: flex-end; /* Aligns icon with bottom of bubble */
-      gap: 10px;
-    }
-    .bot span {
-      background: var(--bot-msg-bg-light);
-      color: var(--bot-msg-text-light);
-      border-bottom-left-radius: 5px;
-    }
-    body.dark .bot span {
-      background: var(--bot-msg-bg-dark);
-      color: var(--bot-msg-text-dark);
-    }
-
-    /* NEW: Bot message icon */
-    .bot-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        flex-shrink: 0; /* Prevents icon from shrinking */
-    }
-
-    /* 6. INPUT AREA & BUTTONS */
-    /* =================================== */
-    .input-area {
-      display: flex;
-      align-items: center;
-      padding: 1rem 1.5rem;
-      border-top: 1px solid var(--border-color-light);
-      transition: border-color 0.4s ease;
-    }
-
-    body.dark .input-area {
-      border-top: 1px solid var(--border-color-dark);
-    }
-
-    #input {
-      flex: 1;
-      padding: 14px 20px;
-      font-size: 1rem;
-      border-radius: 28px;
-      border: 1px solid transparent;
-      background: #f0f2f5;
-      color: var(--text-color-light);
-      transition: all 0.3s ease;
-      margin-right: 10px;
-    }
-
-    #input:focus {
-      outline: none;
-      border-color: var(--primary-color-light);
-      box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
-    }
-
-    body.dark #input {
-      background: #2c2c2c;
-      color: var(--text-color-dark);
-    }
-    body.dark #input:focus {
-      border-color: var(--primary-color-dark);
-      box-shadow: 0 0 0 4px rgba(42, 140, 255, 0.25);
-    }
-
-    #send, #mic {
-      width: 50px;
-      height: 50px;
-      font-size: 1.2rem;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.3s ease, transform 0.2s ease;
-    }
-
-    #send {
-      background: linear-gradient(45deg, #007bff, #0056b3);
-    }
-    #mic {
-      background: linear-gradient(45deg, #28a745, #218838);
-      margin-left: 10px;
-    }
-    #send:hover, #mic:hover {
-      transform: scale(1.05);
-      filter: brightness(1.1);
-    }
-    
-    body.dark #send {
-      background: var(--primary-color-dark);
-    }
-    body.dark #mic {
-      background: #30b050;
-    }
-
-    /* 7. MOBILE RESPONSIVE STYLES */
-    /* =================================== */
+    body { font-family: 'Roboto', 'Segoe UI', sans-serif; background-color: var(--bg-color-light); color: var(--text-color-light); margin: 0; padding: 0; transition: background-color 0.4s ease, color 0.4s ease; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    body.dark { background-color: var(--bg-color-dark); color: var(--text-color-dark); }
+    .top-bar { background: var(--chat-bg-light); display: flex; justify-content: space-between; padding: 1rem 2rem; box-shadow: var(--shadow-light); align-items: center; flex-shrink: 0; z-index: 1000; transition: background-color 0.4s ease, box-shadow 0.4s ease; }
+    body.dark .top-bar { background: var(--chat-bg-dark); box-shadow: var(--shadow-dark); border-bottom: 1px solid var(--border-color-dark); }
+    .top-bar h2 { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--primary-color-light); }
+    body.dark .top-bar h2 { color: var(--primary-color-dark); }
+    #theme-toggle { font-size: 1.5rem; background: none; border: none; cursor: pointer; color: var(--text-color-light); transition: color 0.3s ease, transform 0.3s ease; }
+    #theme-toggle:hover { transform: scale(1.1) rotate(15deg); color: var(--primary-color-light); }
+    body.dark #theme-toggle { color: var(--text-color-dark); }
+    body.dark #theme-toggle:hover { color: var(--primary-color-dark); }
+    .container { display: flex; justify-content: center; align-items: center; padding: 2rem; gap: 2rem; box-sizing: border-box; flex-grow: 1; overflow: hidden; }
+    .chat { background: var(--chat-bg-light); border-radius: 24px; width: 100%; max-width: 700px; height: 100%; display: flex; flex-direction: column; box-shadow: var(--shadow-light); transition: background-color 0.4s ease, box-shadow 0.4s ease; overflow: hidden; }
+    body.dark .chat { background: var(--chat-bg-dark); box-shadow: var(--shadow-dark); border: 1px solid var(--border-color-dark); }
+    .robot-mascot { width: 100%; max-width: 300px; align-self: center; animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0px); } }
+    .messages { flex: 1; overflow-y: auto; padding: 1.5rem; }
+    .response { margin-bottom: 1rem; display: flex; opacity: 0; transform: translateY(20px); animation: message-appear 0.5s forwards ease-out; }
+    @keyframes message-appear { to { opacity: 1; transform: translateY(0); } }
+    .response span { display: inline-block; padding: 12px 20px; border-radius: 20px; max-width: 85%; word-wrap: break-word; font-size: 1rem; line-height: 1.5; }
+    .user { justify-content: flex-end; }
+    .user span { background: var(--user-msg-bg-light); color: var(--user-msg-text-light); border-bottom-right-radius: 5px; }
+    body.dark .user span { background: var(--user-msg-bg-dark); color: var(--user-msg-text-dark); }
+    .bot { justify-content: flex-start; align-items: flex-end; gap: 10px; }
+    .bot span { background: var(--bot-msg-bg-light); color: var(--bot-msg-text-light); border-bottom-left-radius: 5px; }
+    body.dark .bot span { background: var(--bot-msg-bg-dark); color: var(--bot-msg-text-dark); }
+    .bot-icon, .user-icon { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
+    .user { gap: 10px; } /* Add gap for user icon */
+    .input-area { display: flex; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color-light); transition: border-color 0.4s ease; }
+    body.dark .input-area { border-top: 1px solid var(--border-color-dark); }
+    #input { flex: 1; padding: 14px 20px; font-size: 1rem; border-radius: 28px; border: 1px solid transparent; background: #f0f2f5; color: var(--text-color-light); transition: all 0.3s ease; margin-right: 10px; }
+    #input:focus { outline: none; border-color: var(--primary-color-light); box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15); }
+    body.dark #input { background: #2c2c2c; color: var(--text-color-dark); }
+    body.dark #input:focus { border-color: var(--primary-color-dark); box-shadow: 0 0 0 4px rgba(42, 140, 255, 0.25); }
+    #send, #mic { width: 50px; height: 50px; font-size: 1.2rem; color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.3s ease, transform 0.2s ease; }
+    #send { background: linear-gradient(45deg, #007bff, #0056b3); }
+    #mic { background: linear-gradient(45deg, #28a745, #218838); margin-left: 10px; }
+    #mic.is-listening { background: linear-gradient(45deg, #dc3545, #c82333); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); } }
+    #send:hover, #mic:hover { transform: scale(1.05); filter: brightness(1.1); }
+    body.dark #send { background: var(--primary-color-dark); }
+    body.dark #mic { background: #30b050; }
+    body.dark #mic.is-listening { background: linear-gradient(45deg, #e83e8c, #c2185b); }
     @media (max-width: 768px) {
-      /* HIDE the large robot on mobile */
-      .robot-mascot {
-          display: none;
-      }
-      body {
-        height: 100vh; /* Ensure full height on mobile */
-      }
-      .top-bar {
-        padding: 0.75rem 1rem;
-      }
-      .container {
-        padding: 0;
-        height: 100%;
-        width: 100%;
-      }
-      .chat {
-        height: 100%;
-        width: 100%;
-        border-radius: 0;
-        max-width: 100vw;
-        border: none;
-      }
-      .messages {
-        padding: 1rem;
-      }
-      .input-area {
-        padding: 0.75rem;
-      }
-      #input {
-        padding: 12px 18px;
-        font-size: 0.95rem;
-      }
-      #send, #mic {
-        width: 45px;
-        height: 45px;
-      }
+      .robot-mascot { display: none; }
+      body { height: 100vh; }
+      .top-bar { padding: 0.75rem 1rem; }
+      .container { padding: 0; height: 100%; width: 100%; }
+      .chat { height: 100%; width: 100%; border-radius: 0; max-width: 100vw; border: none; }
+      .messages { padding: 1rem; }
+      .input-area { padding: 0.75rem; }
+      #input { padding: 12px 18px; font-size: 0.95rem; }
+      #send, #mic { width: 45px; height: 45px; }
     }
   </style>
 </head>
@@ -357,51 +78,163 @@
   <div class="container">
     <div id="chat" class="chat">
       <div id="messages" class="messages">
-        <!-- Messages will be added here by JavaScript -->
-        <!-- Example Message Structure with NEW robot icons -->
+        <!-- Initial bot message -->
         <div class="response bot">
-            <!-- PASTE YOUR SMALL ICON URL HERE -->
-            <img class="bot-icon"E:\chat bot 2.0\ChatBot2.0\bot-mini.png" alt="Bot Icon">
+            <img class="bot-icon" src="bot-mini.png" alt="Bot Icon">
             <span>Hello! How can I help you today?</span>
         </div>
-        <div class="response user">
-            <span>Tell me about futuristic UIs.</span>
-        </div> 
       </div>
       <div class="input-area">
         <input id="input" type="text" placeholder="Say something..." autocomplete="off" autofocus />
-        <button id="send">➤</button> <!-- Using an arrow for send icon -->
+        <button id="send">➤</button>
         <button id="mic">🎤</button>
       </div>
     </div>
-    <!-- NEW: Large robot mascot for desktop view -->
-    <!-- PASTE YOUR LARGE MASCOT URL HERE -->
-    <img class="robot-mascot" src="E:\chat bot 2.0\ChatBot2.0\bot.png" alt="Robot Mascot">
+    <!-- The large robot mascot for desktop view -->
+    <img class="robot-mascot" src="bot.png" alt="Robot Mascot">
   </div>
 
-  <!-- Your JavaScript files -->
-  <!-- 
-  <script src="index.js"></script>
-  <script src="constants.js"></script>
-  <script src="speech.js"></script> 
-  -->
-
   <script>
-    // Simple theme toggle functionality example
+    // ===================================================================================
+    // UNIFIED CHATBOT JAVASCRIPT
+    // All logic is now in this single script tag
+    // ===================================================================================
+
+    // --- 1. DOM Element References ---
     const themeToggle = document.getElementById('theme-toggle');
+    const messagesContainer = document.getElementById('messages');
+    const messageInput = document.getElementById('input');
+    const sendButton = document.getElementById('send');
+    const micButton = document.getElementById('mic');
+    
+    // --- API Configuration ---
+    // This points to your Node.js server's endpoint, which is defined in your index.js
+    const API_URL = '/chat'; 
+
+    // --- 2. Theme Toggle Functionality ---
     themeToggle.addEventListener('click', () => {
         document.body.classList.toggle('dark');
-        // You can save the theme preference in localStorage
         const isDark = document.body.classList.contains('dark');
-        themeToggle.textContent = isDark ? '☀️' : '🌙';
+        themeToggle.textContent = isDark ? '☀️' : '�';
         localStorage.setItem('chatbotTheme', isDark ? 'dark' : 'light');
     });
 
-    // Load saved theme
     if (localStorage.getItem('chatbotTheme') === 'dark') {
         document.body.classList.add('dark');
         themeToggle.textContent = '☀️';
     }
+
+    // --- 3. Chat Message Handling ---
+    const handleSendMessage = async () => {
+        const userInput = messageInput.value.trim();
+        if (userInput === "") return;
+
+        addMessage(userInput, 'user');
+        messageInput.value = '';
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userInput })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Server error');
+            }
+
+            const result = await response.json();
+            const botReply = result.reply || "Sorry, I couldn't get a response.";
+            addMessage(botReply, 'bot');
+            speak(botReply); // Make the bot speak its response
+
+        } catch (error) {
+            console.error("Error fetching response from server:", error);
+            addMessage(`Oops! Something went wrong: ${error.message}`, 'bot');
+        }
+    };
+
+    sendButton.addEventListener('click', handleSendMessage);
+    messageInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') handleSendMessage();
+    });
+
+    const addMessage = (text, sender) => {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = `response ${sender}`;
+
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = text;
+        
+        // Add the correct icon based on the sender
+        const icon = document.createElement('img');
+        icon.className = sender === 'bot' ? 'bot-icon' : 'user-icon';
+        icon.src = sender === 'bot' ? 'bot-mini.png' : 'user.png';
+        icon.alt = `${sender} icon`;
+
+        if (sender === 'bot') {
+            messageWrapper.appendChild(icon);
+            messageWrapper.appendChild(messageSpan);
+        } else {
+            messageWrapper.appendChild(messageSpan);
+            messageWrapper.appendChild(icon);
+        }
+
+        messagesContainer.appendChild(messageWrapper);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    };
+
+    // --- 4. Speech Recognition (Voice Input) ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        micButton.addEventListener('click', () => {
+            try {
+                micButton.classList.add('is-listening');
+                recognition.start();
+            } catch(e) {
+                console.error("Speech recognition could not be started: ", e);
+                micButton.classList.remove('is-listening');
+            }
+        });
+        
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            messageInput.value = transcript;
+            handleSendMessage(); // Automatically send after speech is recognized
+        };
+
+        recognition.onerror = (event) => {
+            console.error("Speech recognition error:", event.error);
+            micButton.classList.remove('is-listening');
+        };
+        
+        recognition.onend = () => {
+            micButton.classList.remove('is-listening');
+        };
+
+    } else {
+        console.log("Speech Recognition not supported in this browser.");
+        micButton.style.display = 'none'; // Hide mic button if not supported
+    }
+
+    // --- 5. Speech Synthesis (Voice Output) ---
+    function speak(text) {
+        try {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "en-US";
+            utterance.rate = 1;
+            speechSynthesis.speak(utterance);
+        } catch (error) {
+            console.error("Speech synthesis failed:", error);
+        }
+    }
   </script>
 </body>
 </html>
+�
