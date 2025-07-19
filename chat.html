@@ -130,6 +130,8 @@
     const micButton = document.getElementById('mic');
     
     // --- State Variables ---
+    // *** THIS IS THE FIX ***
+    // The URL now correctly points to the /chat endpoint on your server.
     const API_URL = 'https://chatbot2-0-pobq.onrender.com/chat'; 
     let isMuted = localStorage.getItem('chatbotMuted') === 'true'; // NEW
 
@@ -140,7 +142,7 @@
         themeToggle.textContent = '☀️';
     }
     // Set initial mute state
-    muteToggle.textContent = isMuted ? '🔇' : '🔊';
+    muteToggle.textContent = isMuted ? '🔇' : '�';
 
     // --- 3. Event Listeners ---
     themeToggle.addEventListener('click', () => {
@@ -341,3 +343,4 @@
   </script>
 </body>
 </html>
+�
