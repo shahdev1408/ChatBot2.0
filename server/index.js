@@ -5,6 +5,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { GoogleGenerativeAI, FunctionDeclarationSchemaType } from "@google/generative-ai";
+import fetch from 'node-fetch'; // *** THIS IS THE FIX ***
 
 // 2. Initial Setup
 dotenv.config();
