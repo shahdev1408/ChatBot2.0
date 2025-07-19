@@ -25,12 +25,9 @@ const chat = model.startChat();
 
 // 4. Configure Middleware
 // *** THIS IS THE FIX ***
-// Configure CORS to specifically allow requests from your Vercel frontend
-const corsOptions = {
-  origin: 'https://chat-bot2-0.vercel.app', // Your Vercel app's URL
-  optionsSuccessStatus: 200 // For legacy browser support
-};
-app.use(cors(corsOptions));
+// Enable CORS for all origins. This is a robust way to solve the issue
+// when deploying a backend API to a service like Render.
+app.use(cors());
 
 // Enable the server to understand JSON formatted request bodies
 app.use(express.json());
