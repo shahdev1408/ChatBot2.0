@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ChatBot 2.0</title>
   
+  <!-- NEW: Added the Marked.js library for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
   <style>
     /* === Futuristic Chat UI Style Sheet === */
     /* All CSS is now embedded here */
@@ -12,10 +15,9 @@
     :root {
       --bg-color-light: #f0f2f5; --text-color-light: #1c1e21; --primary-color-light: #007bff; --chat-bg-light: #ffffff; --user-msg-bg-light: #0084ff; --user-msg-text-light: #ffffff; --bot-msg-bg-light: #e4e6eb; --bot-msg-text-light: #050505; --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1); --border-color-light: #ced4da;
       --bg-color-dark: #0a0a0a; --text-color-dark: #e4e6eb; --primary-color-dark: #2a8cff; --chat-bg-dark: #18191a; --user-msg-bg-dark: linear-gradient(135deg, #007bff, #2a8cff); --user-msg-text-dark: #ffffff; --bot-msg-bg-dark: #3a3b3c; --bot-msg-text-dark: #e4e6eb; --shadow-dark: 0 6px 20px rgba(0, 115, 255, 0.15); --border-color-dark: #303030;
-      /* NEW: CSS variable for mobile viewport height */
       --vh: 1vh; 
     }
-    body { font-family: 'Roboto', 'Segoe UI', sans-serif; background-color: var(--bg-color-light); color: var(--text-color-light); margin: 0; padding: 0; transition: background-color 0.4s ease, color 0.4s ease; display: flex; flex-direction: column; height: 100vh; /* Fallback for desktop */ height: calc(var(--vh, 1vh) * 100); overflow: hidden; }
+    body { font-family: 'Roboto', 'Segoe UI', sans-serif; background-color: var(--bg-color-light); color: var(--text-color-light); margin: 0; padding: 0; transition: background-color 0.4s ease, color 0.4s ease; display: flex; flex-direction: column; height: 100vh; height: calc(var(--vh, 1vh) * 100); overflow: hidden; }
     body.dark { background-color: var(--bg-color-dark); color: var(--text-color-dark); }
     .top-bar { background: var(--chat-bg-light); display: flex; justify-content: space-between; padding: 1rem 2rem; box-shadow: var(--shadow-light); align-items: center; flex-shrink: 0; z-index: 1000; transition: background-color 0.4s ease, box-shadow 0.4s ease; }
     body.dark .top-bar { background: var(--chat-bg-dark); box-shadow: var(--shadow-dark); border-bottom: 1px solid var(--border-color-dark); }
@@ -31,14 +33,14 @@
     .robot-mascot { width: 100%; max-width: 300px; align-self: center; animation: float 6s ease-in-out infinite; }
     @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0px); } }
     .messages { flex: 1; overflow-y: auto; padding: 1.5rem; }
-    .response { margin-bottom: 1rem; display: flex; opacity: 0; transform: translateY(20px); animation: message-appear 0.5s forwards ease-out; }
+    .response { margin-bottom: 1rem; display: flex; opacity: 0; transform: translateY(20px); animation: message-appear 0.5s forwards ease-out; position: relative; }
     @keyframes message-appear { to { opacity: 1; transform: translateY(0); } }
-    .response span { display: inline-block; padding: 12px 20px; border-radius: 20px; max-width: 85%; word-wrap: break-word; font-size: 1rem; line-height: 1.5; }
+    .response span { display: inline-block; padding: 12px 20px; border-radius: 20px; max-width: 100%; word-wrap: break-word; font-size: 1rem; line-height: 1.5; }
     .user { justify-content: flex-end; align-items: flex-end; gap: 10px; }
     .user span { background: var(--user-msg-bg-light); color: var(--user-msg-text-light); border-bottom-right-radius: 5px; }
     body.dark .user span { background: var(--user-msg-bg-dark); color: var(--user-msg-text-dark); }
     .bot { justify-content: flex-start; align-items: flex-end; gap: 10px; }
-    .bot span { background: var(--bot-msg-bg-light); color: var(--bot-msg-text-light); border-bottom-left-radius: 5px; }
+    .bot span { background: var(--bot-msg-bg-light); color: var(--bot-msg-text-light); border-bottom-left-radius: 5px; max-width: calc(100% - 50px); }
     body.dark .bot span { background: var(--bot-msg-bg-dark); color: var(--bot-msg-text-dark); }
     .bot-icon, .user-icon { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
     .input-area { display: flex; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color-light); transition: border-color 0.4s ease; flex-shrink: 0; }
@@ -56,6 +58,16 @@
     body.dark #send { background: var(--primary-color-dark); }
     body.dark #mic { background: #30b050; }
     body.dark #mic.is-listening { background: linear-gradient(45deg, #e83e8c, #c2185b); }
+    
+    /* NEW: Styles for Copy Button and Markdown content */
+    .copy-btn { position: absolute; top: 10px; right: 10px; background: #ccc; border: none; border-radius: 5px; cursor: pointer; opacity: 0.2; transition: opacity 0.3s; font-size: 14px; padding: 2px 6px; }
+    .response:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover { background: #bbb; }
+    body.dark .copy-btn { background: #555; color: white; }
+    body.dark .copy-btn:hover { background: #666; }
+    pre { background: #2d2d2d; color: #f8f8f2; padding: 1rem; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; }
+    code { font-family: 'Courier New', Courier, monospace; }
+    
     @media (max-width: 768px) {
       .robot-mascot { display: none; }
       .top-bar { padding: 0.75rem 1rem; }
@@ -97,7 +109,6 @@
   <script>
     // ===================================================================================
     // UNIFIED CHATBOT JAVASCRIPT
-    // All logic is now in this single script tag
     // ===================================================================================
 
     // --- 1. DOM Element References ---
@@ -108,7 +119,6 @@
     const micButton = document.getElementById('mic');
     
     // --- API Configuration ---
-    // Make sure this is the correct, full URL of your deployed Render backend
     const API_URL = 'https://chatbot2-0-pobq.onrender.com/chat'; 
 
     // --- 2. Theme Toggle Functionality ---
@@ -163,12 +173,12 @@
         }
     });
 
+    // NEW: Updated addMessage function for Markdown and Copy Button
     const addMessage = (text, sender) => {
         const messageWrapper = document.createElement('div');
         messageWrapper.className = `response ${sender}`;
 
         const messageSpan = document.createElement('span');
-        messageSpan.textContent = text;
         
         const icon = document.createElement('img');
         icon.className = sender === 'bot' ? 'bot-icon' : 'user-icon';
@@ -176,9 +186,30 @@
         icon.alt = `${sender} icon`;
 
         if (sender === 'bot') {
+            // Use marked.parse() to convert Markdown to HTML
+            messageSpan.innerHTML = marked.parse(text);
             messageWrapper.appendChild(icon);
             messageWrapper.appendChild(messageSpan);
-        } else {
+            
+            // Add a copy button to bot messages
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = 'Copy';
+            copyBtn.onclick = () => {
+                // Use a temporary textarea to copy the raw text content
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+            };
+            messageWrapper.appendChild(copyBtn);
+
+        } else { // For user messages
+            messageSpan.textContent = text;
             messageWrapper.appendChild(messageSpan);
             messageWrapper.appendChild(icon);
         }
@@ -229,6 +260,7 @@
     function speak(text) {
         try {
             speechSynthesis.cancel(); 
+            // We only speak the plain text, not the formatted HTML
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = "en-US";
             utterance.rate = 1;
@@ -239,7 +271,6 @@
     }
 
     // --- 6. Mobile Viewport Height Fix ---
-    // This ensures the chat fills the screen correctly on mobile, even with the address bar.
     const setVh = () => {
         let vh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
