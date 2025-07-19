@@ -45,9 +45,6 @@ const tools = [
 // Initialize the model with the tools
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", tools });
 
-// We will create a chat session that persists on the server
-const chat = model.startChat();
-
 // 5. Configure Middleware
 app.use(cors());
 app.use(express.json());
@@ -62,55 +59,48 @@ app.post("/chat", async (req, res) => {
   console.log(`👉 Received request for: "${userInput}"`);
 
   try {
-    const result = await chat.sendMessageStream(userInput);
+    // *** THIS IS THE FIX ***
+    // We now manage the conversation history manually for each request
+    // This makes the server stateless and ensures function calls work reliably.
+    const history = req.body.history || []; // Get history from request, or start new
+    const chat = model.startChat({ history });
+    const result = await chat.sendMessage(userInput); // Use non-streaming for the first call
+    const response = result.response;
 
-    // Set headers for a streaming response
-    res.setHeader('Content-Type', 'text/plain');
-    res.setHeader('Transfer-Encoding', 'chunked');
+    // Check if the model wants to call a function
+    if (response.functionCalls && response.functionCalls.length > 0) {
+      const functionCall = response.functionCalls[0];
+      
+      if (functionCall.name === "get_current_weather") {
+        console.log("🤖 AI wants to call the weather tool...");
+        const { location } = functionCall.args;
 
-    let accumulatedText = ""; // To check for function calls
+        // Call your weather function
+        const weatherData = await get_current_weather(location);
+        
+        // Send the weather data back to the model and get the final response
+        const result2 = await chat.sendMessage([
+          {
+            functionResponse: {
+              name: "get_current_weather",
+              response: weatherData,
+            },
+          },
+        ]);
 
-    for await (const chunk of result.stream) {
-        accumulatedText += chunk.text();
-        // Check if the model is trying to call a function
-        if (chunk.functionCalls && chunk.functionCalls().length > 0) {
-            const functionCall = chunk.functionCalls()[0];
-            
-            if (functionCall.name === "get_current_weather") {
-                console.log("🤖 AI wants to call the weather tool...");
-                const { location } = functionCall.args;
-                const weatherData = await get_current_weather(location);
-                
-                // Send the weather data back to the model in a new stream
-                const result2 = await chat.sendMessageStream([
-                    {
-                        functionResponse: {
-                            name: "get_current_weather",
-                            response: weatherData,
-                        },
-                    },
-                ]);
-
-                // Stream the final response from the second call
-                for await (const chunk2 of result2.stream) {
-                    res.write(chunk2.text());
-                }
-                res.end();
-                return; // Exit after handling the function call
-            }
-        } else {
-            // If it's a regular text chunk, just send it
-            res.write(chunk.text());
-        }
+        // Get the final, natural language response
+        const finalResponse = result2.response.text();
+        res.json({ reply: finalResponse });
+        return; // End the request here
+      }
     }
     
-    // End the response if it was a simple text response
-    res.end();
-    console.log("✅ Stream finished.");
+    // If no function call, just send the regular text response
+    res.json({ reply: response.text() });
 
   } catch (error) {
-    console.error("❌ API error:", error.message);
-    res.status(500).end("Failed to get a response from the AI.");
+    console.error("❌ API error:", error);
+    res.status(500).json({ error: "Failed to get a response from the AI." });
   }
 });
 
