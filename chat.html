@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ChatBot 2.0</title>
   
-  <!-- NEW: Added the Marked.js library for Markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
@@ -40,10 +39,9 @@
     .user span { background: var(--user-msg-bg-light); color: var(--user-msg-text-light); border-bottom-right-radius: 5px; }
     body.dark .user span { background: var(--user-msg-bg-dark); color: var(--user-msg-text-dark); }
     
-    /* MODIFIED: Bot response container is now a column */
     .bot { flex-direction: column; align-items: flex-start; }
-    .bot-bubble { display: flex; align-items: flex-end; gap: 10px; }
-    .bot span { background: var(--bot-msg-bg-light); color: var(--bot-msg-text-light); border-bottom-left-radius: 5px; max-width: 100%; }
+    .bot-bubble { display: flex; align-items: flex-end; gap: 10px; width: 100%; }
+    .bot span { background: var(--bot-msg-bg-light); color: var(--bot-msg-text-light); border-bottom-left-radius: 5px; max-width: calc(100% - 50px); }
     body.dark .bot span { background: var(--bot-msg-bg-dark); color: var(--bot-msg-text-dark); }
     .bot-icon, .user-icon { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
     .input-area { display: flex; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color-light); transition: border-color 0.4s ease; flex-shrink: 0; }
@@ -62,13 +60,16 @@
     body.dark #mic { background: #30b050; }
     body.dark #mic.is-listening { background: linear-gradient(45deg, #e83e8c, #c2185b); }
     
-    /* MODIFIED: Styles for Copy Button and Markdown content */
-    .copy-btn { align-self: flex-end; background: #e0e0e0; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; font-size: 12px; padding: 3px 8px; margin-top: 8px; margin-left: 50px; /* Aligns with message bubble */ }
-    .copy-btn:hover { background: #d0d0d0; }
+    .copy-btn { align-self: flex-end; background: #e0e0e0; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; font-size: 12px; padding: 3px 8px; margin-top: 8px; margin-left: 50px; opacity: 0; visibility: hidden; }
+    .bot:hover .copy-btn { opacity: 1; visibility: visible; }
     body.dark .copy-btn { background: #4a4a4a; color: white; }
     body.dark .copy-btn:hover { background: #5a5a5a; }
     pre { background: #2d2d2d; color: #f8f8f2; padding: 1rem; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; }
     code { font-family: 'Courier New', Courier, monospace; }
+    .blinking-cursor { display: inline-block; width: 8px; height: 1rem; background-color: var(--text-color-light); animation: blink 1s step-end infinite; }
+    body.dark .blinking-cursor { background-color: var(--text-color-dark); }
+    @keyframes blink { from, to { background-color: transparent } 50% { background-color: var(--text-color-light); } }
+    body.dark @keyframes blink { from, to { background-color: transparent } 50% { background-color: var(--text-color-dark); } }
     
     @media (max-width: 768px) {
       .robot-mascot { display: none; }
@@ -112,7 +113,7 @@
 
   <script>
     // ===================================================================================
-    // UNIFIED CHATBOT JAVASCRIPT
+    // UNIFIED CHATBOT JAVASCRIPT (NOW WITH STREAMING!)
     // ===================================================================================
 
     // --- 1. DOM Element References ---
@@ -138,13 +139,18 @@
         themeToggle.textContent = '☀️';
     }
 
-    // --- 3. Chat Message Handling ---
+    // --- 3. Chat Message Handling (NOW WITH STREAMING) ---
     const handleSendMessage = async () => {
         const userInput = messageInput.value.trim();
         if (userInput === "") return;
 
         addMessage(userInput, 'user');
         messageInput.value = '';
+        
+        // Create a new, empty message bubble for the bot's response
+        const botMessageWrapper = createBotMessageWrapper();
+        const botMessageSpan = botMessageWrapper.querySelector('span');
+        let fullBotReply = ""; // To store the full response for speech and copy
 
         try {
             const response = await fetch(API_URL, {
@@ -153,20 +159,34 @@
                 body: JSON.stringify({ message: userInput })
             });
             
-            const contentType = response.headers.get("content-type");
-            if (!response.ok || !contentType || !contentType.includes("application/json")) {
-                const errorText = await response.text();
-                throw new Error(`Server returned a non-JSON response. Status: ${response.status}. Body: ${errorText.substring(0, 200)}...`);
+            if (!response.ok) {
+                throw new Error(`Server Error: ${response.status}`);
             }
 
-            const result = await response.json();
-            const botReply = result.reply || "Sorry, I couldn't get a response.";
-            addMessage(botReply, 'bot');
-            speak(botReply); 
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            // Read the stream
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value);
+                fullBotReply += chunk;
+                botMessageSpan.innerHTML = marked.parse(fullBotReply + '<span class="blinking-cursor"></span>'); // Render markdown in real-time with cursor
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // Final render without the cursor
+            botMessageSpan.innerHTML = marked.parse(fullBotReply);
+
+            // Add the copy button and enable speech after the stream is complete
+            addCopyButton(botMessageWrapper, fullBotReply);
+            speak(fullBotReply);
 
         } catch (error) {
-            console.error("Error fetching response from server:", error);
-            addMessage(`Oops! Connection to the AI server failed. Error: ${error.message}`, 'bot');
+            console.error("Error fetching streaming response:", error);
+            botMessageSpan.textContent = `Oops! Connection to the AI server failed. Error: ${error.message}`;
         }
     };
 
@@ -177,52 +197,61 @@
         }
     });
 
-    // MODIFIED: Updated addMessage function for new layout
+    // MODIFIED: addMessage function for user messages
     const addMessage = (text, sender) => {
         const messageWrapper = document.createElement('div');
         messageWrapper.className = `response ${sender}`;
-
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = text;
         const icon = document.createElement('img');
-        icon.className = sender === 'bot' ? 'bot-icon' : 'user-icon';
-        icon.src = sender === 'bot' ? 'bot-mini.png' : 'user.png';
-        icon.alt = `${sender} icon`;
-
-        if (sender === 'bot') {
-            const messageBubble = document.createElement('div');
-            messageBubble.className = 'bot-bubble';
-
-            const messageSpan = document.createElement('span');
-            messageSpan.innerHTML = marked.parse(text);
-            
-            messageBubble.appendChild(icon);
-            messageBubble.appendChild(messageSpan);
-            messageWrapper.appendChild(messageBubble);
-            
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'copy-btn';
-            copyBtn.textContent = 'Copy';
-            copyBtn.onclick = () => {
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                copyBtn.textContent = 'Copied!';
-                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
-            };
-            messageWrapper.appendChild(copyBtn);
-
-        } else { // For user messages
-            const messageSpan = document.createElement('span');
-            messageSpan.textContent = text;
-            messageWrapper.appendChild(messageSpan);
-            messageWrapper.appendChild(icon);
-        }
-
+        icon.className = 'user-icon';
+        icon.src = 'user.png';
+        icon.alt = 'user icon';
+        messageWrapper.appendChild(messageSpan);
+        messageWrapper.appendChild(icon);
         messagesContainer.appendChild(messageWrapper);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     };
+
+    // NEW: Function to create the initial bot message structure for streaming
+    const createBotMessageWrapper = () => {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = 'response bot';
+        const messageBubble = document.createElement('div');
+        messageBubble.className = 'bot-bubble';
+        const icon = document.createElement('img');
+        icon.className = 'bot-icon';
+        icon.src = 'bot-mini.png';
+        icon.alt = 'Bot Icon';
+        const messageSpan = document.createElement('span');
+        messageSpan.innerHTML = '<span class="blinking-cursor"></span>'; // Start with a blinking cursor
+        
+        messageBubble.appendChild(icon);
+        messageBubble.appendChild(messageSpan);
+        messageWrapper.appendChild(messageBubble);
+        messagesContainer.appendChild(messageWrapper);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        return messageWrapper;
+    };
+
+    // NEW: Function to add the copy button after a message is complete
+    const addCopyButton = (messageWrapper, textToCopy) => {
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.textContent = 'Copy';
+        copyBtn.onclick = () => {
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+        };
+        messageWrapper.appendChild(copyBtn);
+    };
+
 
     // --- 4. Speech Recognition (Voice Input) ---
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -266,7 +295,6 @@
     function speak(text) {
         try {
             speechSynthesis.cancel(); 
-            // We only speak the plain text, not the formatted HTML
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = "en-US";
             utterance.rate = 1;
