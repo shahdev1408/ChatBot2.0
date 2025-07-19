@@ -1,11 +1,11 @@
-// index.js (Final Version with Function Calling)
+// index.js (Final Version with Corrected Function Calling)
 
 // 1. Import necessary packages
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { GoogleGenerativeAI, FunctionDeclarationSchemaType } from "@google/generative-ai";
-import fetch from 'node-fetch'; // *** THIS IS THE FIX ***
+import fetch from 'node-fetch';
 
 // 2. Initial Setup
 dotenv.config();
@@ -45,6 +45,9 @@ const tools = [
 // Initialize the model with the tools
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", tools });
 
+// We will create a chat session that persists on the server
+const chat = model.startChat();
+
 // 5. Configure Middleware
 app.use(cors());
 app.use(express.json());
@@ -59,44 +62,55 @@ app.post("/chat", async (req, res) => {
   console.log(`👉 Received request for: "${userInput}"`);
 
   try {
-    // Start a new chat session for each request to handle function calls correctly
-    const chat = model.startChat();
-    const result = await chat.sendMessage(userInput);
-    const response = result.response;
+    const result = await chat.sendMessageStream(userInput);
 
-    // Check if the model wants to call a function
-    if (response.functionCalls) {
-      const functionCall = response.functionCalls[0];
-      
-      if (functionCall.name === "get_current_weather") {
-        console.log("🤖 AI wants to call the weather tool...");
-        const { location } = functionCall.args;
+    // Set headers for a streaming response
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Transfer-Encoding', 'chunked');
 
-        // Call your weather function
-        const weatherData = await get_current_weather(location);
-        
-        // Send the weather data back to the model
-        const result2 = await chat.sendMessage([
-          {
-            functionResponse: {
-              name: "get_current_weather",
-              response: weatherData,
-            },
-          },
-        ]);
+    let accumulatedText = ""; // To check for function calls
 
-        // Get the final, natural language response
-        const finalResponse = result2.response.text();
-        res.json({ reply: finalResponse });
-      }
-    } else {
-      // If no function call, just send the regular text response
-      res.json({ reply: response.text() });
+    for await (const chunk of result.stream) {
+        accumulatedText += chunk.text();
+        // Check if the model is trying to call a function
+        if (chunk.functionCalls && chunk.functionCalls().length > 0) {
+            const functionCall = chunk.functionCalls()[0];
+            
+            if (functionCall.name === "get_current_weather") {
+                console.log("🤖 AI wants to call the weather tool...");
+                const { location } = functionCall.args;
+                const weatherData = await get_current_weather(location);
+                
+                // Send the weather data back to the model in a new stream
+                const result2 = await chat.sendMessageStream([
+                    {
+                        functionResponse: {
+                            name: "get_current_weather",
+                            response: weatherData,
+                        },
+                    },
+                ]);
+
+                // Stream the final response from the second call
+                for await (const chunk2 of result2.stream) {
+                    res.write(chunk2.text());
+                }
+                res.end();
+                return; // Exit after handling the function call
+            }
+        } else {
+            // If it's a regular text chunk, just send it
+            res.write(chunk.text());
+        }
     }
+    
+    // End the response if it was a simple text response
+    res.end();
+    console.log("✅ Stream finished.");
 
   } catch (error) {
     console.error("❌ API error:", error.message);
-    res.status(500).json({ error: "Failed to get a response from the AI." });
+    res.status(500).end("Failed to get a response from the AI.");
   }
 });
 
