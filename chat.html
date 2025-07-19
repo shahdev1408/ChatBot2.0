@@ -22,10 +22,11 @@
     body.dark .top-bar { background: var(--chat-bg-dark); box-shadow: var(--shadow-dark); border-bottom: 1px solid var(--border-color-dark); }
     .top-bar h2 { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--primary-color-light); }
     body.dark .top-bar h2 { color: var(--primary-color-dark); }
-    #theme-toggle { font-size: 1.5rem; background: none; border: none; cursor: pointer; color: var(--text-color-light); transition: color 0.3s ease, transform 0.3s ease; }
-    #theme-toggle:hover { transform: scale(1.1) rotate(15deg); color: var(--primary-color-light); }
-    body.dark #theme-toggle { color: var(--text-color-dark); }
-    body.dark #theme-toggle:hover { color: var(--primary-color-dark); }
+    .top-bar-buttons { display: flex; gap: 1rem; } /* NEW: Container for top buttons */
+    #theme-toggle, #mute-toggle { font-size: 1.5rem; background: none; border: none; cursor: pointer; color: var(--text-color-light); transition: color 0.3s ease, transform 0.3s ease; }
+    #theme-toggle:hover, #mute-toggle:hover { transform: scale(1.1); color: var(--primary-color-light); }
+    body.dark #theme-toggle, body.dark #mute-toggle { color: var(--text-color-dark); }
+    body.dark #theme-toggle:hover, body.dark #mute-toggle:hover { color: var(--primary-color-dark); }
     .container { display: flex; justify-content: center; align-items: center; padding: 2rem; gap: 2rem; box-sizing: border-box; flex-grow: 1; overflow: hidden; }
     .chat { background: var(--chat-bg-light); border-radius: 24px; width: 100%; max-width: 700px; height: 100%; display: flex; flex-direction: column; box-shadow: var(--shadow-light); transition: background-color 0.4s ease, box-shadow 0.4s ease; overflow: hidden; }
     body.dark .chat { background: var(--chat-bg-dark); box-shadow: var(--shadow-dark); border: 1px solid var(--border-color-dark); }
@@ -87,7 +88,11 @@
 
   <div class="top-bar">
     <h2>ChatBot 2.0</h2>
-    <button id="theme-toggle">🌙</button>
+    <!-- NEW: Button container -->
+    <div class="top-bar-buttons">
+        <button id="mute-toggle">🔊</button>
+        <button id="theme-toggle">🌙</button>
+    </div>
   </div>
 
   <div class="container">
@@ -113,20 +118,31 @@
 
   <script>
     // ===================================================================================
-    // UNIFIED CHATBOT JAVASCRIPT (NOW WITH STREAMING!)
+    // UNIFIED CHATBOT JAVASCRIPT (NOW WITH MUTE TOGGLE!)
     // ===================================================================================
 
     // --- 1. DOM Element References ---
     const themeToggle = document.getElementById('theme-toggle');
+    const muteToggle = document.getElementById('mute-toggle'); // NEW
     const messagesContainer = document.getElementById('messages');
     const messageInput = document.getElementById('input');
     const sendButton = document.getElementById('send');
     const micButton = document.getElementById('mic');
     
-    // --- API Configuration ---
+    // --- State Variables ---
     const API_URL = 'https://chatbot2-0-pobq.onrender.com/chat'; 
+    let isMuted = localStorage.getItem('chatbotMuted') === 'true'; // NEW
 
-    // --- 2. Theme Toggle Functionality ---
+    // --- 2. Initialization ---
+    // Set initial theme
+    if (localStorage.getItem('chatbotTheme') === 'dark') {
+        document.body.classList.add('dark');
+        themeToggle.textContent = '☀️';
+    }
+    // Set initial mute state
+    muteToggle.textContent = isMuted ? '🔇' : '🔊';
+
+    // --- 3. Event Listeners ---
     themeToggle.addEventListener('click', () => {
         document.body.classList.toggle('dark');
         const isDark = document.body.classList.contains('dark');
@@ -134,23 +150,34 @@
         localStorage.setItem('chatbotTheme', isDark ? 'dark' : 'light');
     });
 
-    if (localStorage.getItem('chatbotTheme') === 'dark') {
-        document.body.classList.add('dark');
-        themeToggle.textContent = '☀️';
-    }
+    // NEW: Mute toggle event listener
+    muteToggle.addEventListener('click', () => {
+        isMuted = !isMuted;
+        muteToggle.textContent = isMuted ? '🔇' : '🔊';
+        localStorage.setItem('chatbotMuted', isMuted);
+        if (isMuted) {
+            speechSynthesis.cancel(); // Stop any currently playing speech
+        }
+    });
 
-    // --- 3. Chat Message Handling (NOW WITH STREAMING) ---
-    const handleSendMessage = async () => {
+    sendButton.addEventListener('click', handleSendMessage);
+    messageInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            handleSendMessage();
+        }
+    });
+
+    // --- 4. Core Functions ---
+    async function handleSendMessage() {
         const userInput = messageInput.value.trim();
         if (userInput === "") return;
 
         addMessage(userInput, 'user');
         messageInput.value = '';
         
-        // Create a new, empty message bubble for the bot's response
         const botMessageWrapper = createBotMessageWrapper();
         const botMessageSpan = botMessageWrapper.querySelector('span');
-        let fullBotReply = ""; // To store the full response for speech and copy
+        let fullBotReply = "";
 
         try {
             const response = await fetch(API_URL, {
@@ -166,21 +193,17 @@
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
 
-            // Read the stream
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 
                 const chunk = decoder.decode(value);
                 fullBotReply += chunk;
-                botMessageSpan.innerHTML = marked.parse(fullBotReply + '<span class="blinking-cursor"></span>'); // Render markdown in real-time with cursor
+                botMessageSpan.innerHTML = marked.parse(fullBotReply + '<span class="blinking-cursor"></span>');
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
             
-            // Final render without the cursor
             botMessageSpan.innerHTML = marked.parse(fullBotReply);
-
-            // Add the copy button and enable speech after the stream is complete
             addCopyButton(botMessageWrapper, fullBotReply);
             speak(fullBotReply);
 
@@ -190,31 +213,34 @@
         }
     };
 
-    sendButton.addEventListener('click', handleSendMessage);
-    messageInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            handleSendMessage();
-        }
-    });
-
-    // MODIFIED: addMessage function for user messages
-    const addMessage = (text, sender) => {
+    function addMessage(text, sender) {
         const messageWrapper = document.createElement('div');
         messageWrapper.className = `response ${sender}`;
         const messageSpan = document.createElement('span');
-        messageSpan.textContent = text;
         const icon = document.createElement('img');
-        icon.className = 'user-icon';
-        icon.src = 'user.png';
-        icon.alt = 'user icon';
-        messageWrapper.appendChild(messageSpan);
-        messageWrapper.appendChild(icon);
+        icon.className = sender === 'bot' ? 'bot-icon' : 'user-icon';
+        icon.src = sender === 'bot' ? 'bot-mini.png' : 'user.png';
+        icon.alt = `${sender} icon`;
+
+        if (sender === 'bot') {
+            const messageBubble = document.createElement('div');
+            messageBubble.className = 'bot-bubble';
+            messageSpan.innerHTML = marked.parse(text);
+            messageBubble.appendChild(icon);
+            messageBubble.appendChild(messageSpan);
+            messageWrapper.appendChild(messageBubble);
+            addCopyButton(messageWrapper, text);
+        } else {
+            messageSpan.textContent = text;
+            messageWrapper.appendChild(messageSpan);
+            messageWrapper.appendChild(icon);
+        }
+
         messagesContainer.appendChild(messageWrapper);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     };
 
-    // NEW: Function to create the initial bot message structure for streaming
-    const createBotMessageWrapper = () => {
+    function createBotMessageWrapper() {
         const messageWrapper = document.createElement('div');
         messageWrapper.className = 'response bot';
         const messageBubble = document.createElement('div');
@@ -224,7 +250,7 @@
         icon.src = 'bot-mini.png';
         icon.alt = 'Bot Icon';
         const messageSpan = document.createElement('span');
-        messageSpan.innerHTML = '<span class="blinking-cursor"></span>'; // Start with a blinking cursor
+        messageSpan.innerHTML = '<span class="blinking-cursor"></span>';
         
         messageBubble.appendChild(icon);
         messageBubble.appendChild(messageSpan);
@@ -234,8 +260,7 @@
         return messageWrapper;
     };
 
-    // NEW: Function to add the copy button after a message is complete
-    const addCopyButton = (messageWrapper, textToCopy) => {
+    function addCopyButton(messageWrapper, textToCopy) {
         const copyBtn = document.createElement('button');
         copyBtn.className = 'copy-btn';
         copyBtn.textContent = 'Copy';
@@ -252,8 +277,7 @@
         messageWrapper.appendChild(copyBtn);
     };
 
-
-    // --- 4. Speech Recognition (Voice Input) ---
+    // --- 5. Speech APIs ---
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
@@ -291,8 +315,9 @@
         micButton.style.display = 'none';
     }
 
-    // --- 5. Speech Synthesis (Voice Output) ---
+    // MODIFIED: Speak function now checks if muted
     function speak(text) {
+        if (isMuted) return; // Don't speak if muted
         try {
             speechSynthesis.cancel(); 
             const utterance = new SpeechSynthesisUtterance(text);
